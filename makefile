@@ -1,24 +1,38 @@
-LIBRARY =./src/gpio_library
+DIR =./src/gpio_library
 
 CC = gcc
 
-CFLAGS = -Wall -Wextra -Werror -Iinclude -g
+CFLAGS = -I./include -g -Wno-unused-parameter
+LDFLAGS = -L. -lm
+STATIC_FLAGS = -c
 
-EXECUTABLES = followLine
+EXECUTABLES = main
+LIBRARIES = libRGB_lib.a
 
-ASSIGNMENT1B_SRC = \
-	./src/main.c \
-	$(LIBRARY)/core/pins.c \
-	$(LIBRARY)/core/timer.c \
-	$(LIBRARY)/core/i2c_access.c
+LIB_SRC = $(DIR)/core/pins.c \
+	$(DIR)/core/timer.c \
+	$(DIR)/core/i2c_access.c \
+	$(DIR)/TCS34725/tcs_controller.c \
+	$(DIR)/TCS34725/color_converter.c
 
-all: $(EXECUTABLES)
+LIB_OBJ = $(LIB_SRC:.c=.o)
 
-followLine: $(ASSIGNMENT1B_SRC)
-	$(CC) $(CFLAGS) -o $@ $^
+all: $(LIBRARIES) $(EXECUTABLES)
 
-run: $(EXECUTABLES);
-	./assignment2
+$(EXECUTABLES): src/main.c $(LIBRARIES)
+	$(CC) $(CFLAGS) -o $@ $< -L. -lRGB_lib $(LDFLAGS)
+
+$(LIBRARIES): $(LIB_OBJ)
+	ar rcs $@ $^
+
+%.o: %.c
+	$(CC) $(CFLAGS) $(STATIC_FLAGS) $< -o $@
+
+run: $(EXECUTABLES)
+	./$(EXECUTABLES)
 
 clean:
-	rm -f $(EXECUTABLES)
+	rm -f $(EXECUTABLES) $(LIBRARIES)
+	rm -f $(LIB_OBJ)
+	rm -f $(DIR)/core/*.o $(DIR)/TCS34725/*.o
+	rm -f src/main.o

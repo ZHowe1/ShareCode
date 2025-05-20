@@ -56,3 +56,10 @@ dkms.conf
 
 # Tests
 Tests/
+
+# Other library
+include/gpio_library/chips
+include/gpio_library/motors
+
+src/gpio_library/chips
+src/gpio_library/motors
